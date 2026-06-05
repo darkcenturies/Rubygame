@@ -22,7 +22,22 @@ def mkdir_p(sftp: paramiko.SFTPClient, remote_dir: str) -> None:
         try:
             sftp.stat(path)
         except OSError:
-            sftp.mkdir(path)
+            try:
+                sftp.mkdir(path)
+            except OSError as exc:
+                raise OSError(f"cannot create remote directory {path!r}: {exc}") from exc
+
+
+def require_remote_dir(sftp: paramiko.SFTPClient, path: str) -> None:
+    try:
+        st = sftp.stat(path)
+    except OSError as exc:
+        raise SystemExit(
+            f"Remote path missing: {path!r} ({exc}). "
+            "Your SFTP root lists Rubygame/ — uploads must go under Rubygame/plugins/."
+        ) from exc
+    if not st.st_mode & 0o040000:
+        raise SystemExit(f"Remote path is not a directory: {path!r}")
 
 
 def main() -> int:
@@ -37,7 +52,12 @@ def main() -> int:
         return 1
 
     transport = paramiko.Transport((host, port))
-    transport.connect(username=user, password=password)
+    try:
+        transport.connect(username=user, password=password)
+    except Exception as exc:
+        print(f"SFTP login failed: {exc}", file=sys.stderr)
+        return 1
+
     sftp = paramiko.SFTPClient.from_transport(transport)
     if sftp is None:
         print("SFTP client setup failed", file=sys.stderr)
@@ -45,6 +65,10 @@ def main() -> int:
 
     try:
         print(f"Remote cwd: {sftp.getcwd() or '/'}")
+        print(f"Remote root entries: {sftp.listdir('.')}")
+        require_remote_dir(sftp, "Rubygame")
+        require_remote_dir(sftp, REMOTE_PREFIX)
+
         files = sorted(p for p in local_root.rglob("*") if p.is_file())
         print(f"Uploading {len(files)} files to {REMOTE_PREFIX}/")
 
@@ -54,7 +78,11 @@ def main() -> int:
             remote_dir = os.path.dirname(remote_path)
             if remote_dir:
                 mkdir_p(sftp, remote_dir)
-            sftp.put(str(local_file), remote_path)
+            try:
+                sftp.put(str(local_file), remote_path)
+            except OSError as exc:
+                print(f"Failed put {rel} -> {remote_path}: {exc}", file=sys.stderr)
+                return 1
             print(f"put {rel}")
 
         print("Deploy succeeded.")
