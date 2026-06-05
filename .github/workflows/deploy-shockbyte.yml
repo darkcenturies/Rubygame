@@ -15,7 +15,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,18 +33,15 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: Deploy plugins to server root
-        timeout-minutes: 42
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+      - name: Deploy plugins folder
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
           port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
           username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
           password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          local_path: ./plugins/
-          remote_path: .
-          sftp_only: true
-          sftpArgs: -o ConnectTimeout=30
-
-      - name: Deploy succeeded
-        run: echo "Plugins uploaded to Shockbyte (./plugins/ -> server root)."
+          protocol: sftp
+          local-dir: ./plugins/
+          server-dir: ./plugins/
+          log-level: verbose
+          dangerous-clean-slate: false
