@@ -11,17 +11,22 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy plugins folder via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.5
+      - name: Deploy plugins via SFTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
           port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
           username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
           password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          local_path: ./plugins/
-          remote_path: /plugins/
-          sftp_only: true
+          protocol: sftp
+          local-dir: ./plugins/
+          server-dir: ./plugins/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
