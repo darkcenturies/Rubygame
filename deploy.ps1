@@ -44,13 +44,13 @@ if ($winScp) {
         'option batch abort',
         'option confirm off',
         "open sftp://${SFTP_USER}@${SFTP_HOST}:${SFTP_PORT}/ -hostkey=`"ssh-rsa 2048 RsvkKfFn1JlKW34Lqs8lqeyCIQC8JveU8JvuOH6ctc8=`" -password=$($SFTP_PASSWORD -replace '"','""')",
-        'cd /',
+        'cd /Rubygame',
         "synchronize remote `"$pluginsLocal`" /plugins -delete=none",
         'exit'
     )
     $lines | Set-Content -Path $scriptFile -Encoding ASCII
 
-    Write-Host 'Deploying with WinSCP...'
+    Write-Host 'Deploying with WinSCP to /Rubygame/plugins ...'
     & $winScp /ini=nul /script=$scriptFile
     $code = $LASTEXITCODE
     Remove-Item $scriptFile -Force
@@ -60,6 +60,6 @@ if ($winScp) {
 }
 
 Write-Host 'WinSCP not found. Using scp (you may be prompted for password)...'
-$dest = "${SFTP_USER}@${SFTP_HOST}:/plugins/"
+$dest = "${SFTP_USER}@${SFTP_HOST}:Rubygame/plugins/"
 & scp -P $SFTP_PORT -r "$pluginsLocal\*" $dest
 Write-Host 'Done. Restart the server in Shockbyte if needed.'
