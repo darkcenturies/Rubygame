@@ -16,17 +16,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy plugins via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          protocol: sftp
-          local-dir: ./plugins/
-          server-dir: ./plugins/
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
+      - name: Install lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Diagnose SFTP connection
+        env:
+          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
+          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
+          SHOCKBYTE_SFTP_USER: ${{ secrets.SHOCKBYTE_SFTP_USER }}
+          SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
+        run: |
+          set -e
+          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" -e "pwd; ls -la; cls -1 plugins; quit"
+
+      - name: Mirror plugins to Shockbyte
+        env:
+          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
+          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
+          SHOCKBYTE_SFTP_USER: ${{ secrets.SHOCKBYTE_SFTP_USER }}
+          SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
+        run: |
+          set -e
+          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" <<'EOF'
+          set sftp:auto-confirm yes
+          set net:timeout 20
+          set net:max-retries 3
+          mkdir -f plugins
+          mirror -R --verbose --parallel=4 plugins plugins
+          quit
+          EOF
+          echo "Deploy upload finished."
