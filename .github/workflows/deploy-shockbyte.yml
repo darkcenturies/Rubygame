@@ -51,13 +51,5 @@ jobs:
           port ${SHOCKBYTE_SFTP_PORT}
           EOF
           chmod 600 ~/.netrc
-          lftp sftp://${SHOCKBYTE_SFTP_HOST}:${SHOCKBYTE_SFTP_PORT} <<'LFTP_EOF'
-          set sftp:auto-confirm yes
-          set cmd:fail-exit yes
-          mkdir -f plugins
-          lcd plugins
-          cd plugins
-          mirror -R --verbose --parallel=4 .
-          bye
-          LFTP_EOF
+          lftp sftp://${SHOCKBYTE_SFTP_HOST}:${SHOCKBYTE_SFTP_PORT} -e "set sftp:auto-confirm yes; set cmd:fail-exit yes; mkdir -f plugins; lcd plugins; cd plugins; mirror -R --verbose --parallel=4 .; bye"
           echo "Deploy succeeded (lftp mirror to remote plugins/)."
