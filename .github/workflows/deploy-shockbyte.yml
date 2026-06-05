@@ -33,7 +33,20 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: Deploy plugins (sftp into existing plugins dir)
+      - name: List remote SFTP root
+        env:
+          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
+          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
+          SHOCKBYTE_SFTP_USER: ${{ secrets.SHOCKBYTE_SFTP_USER }}
+          SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass openssh-client
+          export SSHPASS="${SHOCKBYTE_SFTP_PASSWORD}"
+          printf '%s\n' 'pwd' 'ls -la' 'bye' | sshpass -e sftp -P "${SHOCKBYTE_SFTP_PORT}" \
+            -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            "${SHOCKBYTE_SFTP_USER}@${SHOCKBYTE_SFTP_HOST}" || true
+
+      - name: Deploy plugins (sftp put with plugins/ prefix)
         timeout-minutes: 55
         env:
           SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
@@ -44,24 +57,20 @@ jobs:
           set -e
           sudo apt-get update -qq && sudo apt-get install -y -qq sshpass openssh-client
           BATCH=$(mktemp)
-          {
-            echo "cd plugins"
-            find plugins -type f | while IFS= read -r f; do
-              rel="${f#plugins/}"
-              dir=$(dirname "$rel")
-              if [ "$dir" != "." ]; then
-                echo "-mkdir $dir"
-              fi
-              echo "put $f $rel"
-            done
-            echo "bye"
-          } > "$BATCH"
-          echo "Uploading $(grep -c '^put ' "$BATCH") files into remote plugins/ ..."
+          find plugins -type f | sort | while IFS= read -r f; do
+            rel="${f#plugins/}"
+            rdir=$(dirname "plugins/$rel")
+            if [ "$rdir" != "plugins" ] && [ "$rdir" != "plugins/." ]; then
+              echo "-mkdir $rdir"
+            fi
+            echo "put $f plugins/$rel"
+          done >> "$BATCH"
+          echo "bye" >> "$BATCH"
+          echo "Uploading $(grep -c '^put ' "$BATCH") files to plugins/..."
           export SSHPASS="${SHOCKBYTE_SFTP_PASSWORD}"
           sshpass -e sftp -P "${SHOCKBYTE_SFTP_PORT}" \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            -o BatchMode=no \
             -b "$BATCH" \
             "${SHOCKBYTE_SFTP_USER}@${SHOCKBYTE_SFTP_HOST}"
           echo "Deploy succeeded."
