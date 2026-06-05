@@ -22,6 +22,6 @@ jobs:
           port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
           username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
           password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          localPath: ./plugins/
-          remotePath: /plugins/
-          sftpOnly: true
+          local_path: ./plugins/
+          remote_path: /plugins/
+          sftp_only: true
