@@ -1,5 +1,4 @@
 # === Secrets & server-only (configure on Shockbyte, never commit) ===
-server.properties
 plugins/EssentialsDiscord/
 
 # === Player / runtime data ===

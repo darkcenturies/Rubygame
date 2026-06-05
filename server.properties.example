@@ -1,4 +1,0 @@
-# Copy to server.properties on your Shockbyte server and fill in secrets locally.
-# This file is safe to commit — do NOT commit server.properties itself.
-management-server-secret=CHANGE_ME_ON_SERVER
-rcon.password=
