@@ -33,10 +33,9 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: Deploy (lftp mirror)
+      - name: Deploy plugins (lftp mirror)
         id: lftp_mirror
-        continue-on-error: true
-        timeout-minutes: 40
+        timeout-minutes: 42
         env:
           SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
           SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
@@ -52,30 +51,13 @@ jobs:
           port ${SHOCKBYTE_SFTP_PORT}
           EOF
           chmod 600 ~/.netrc
-          lftp sftp://${SHOCKBYTE_SFTP_HOST}:${SHOCKBYTE_SFTP_PORT} -e "set sftp:auto-confirm yes; mkdir -f plugins; mirror -R --parallel=4 --verbose ./plugins ./plugins; quit"
-
-      - name: Deploy (wlixcc server root)
-        id: wlixcc_root
-        if: steps.lftp_mirror.outcome == 'failure'
-        continue-on-error: true
-        timeout-minutes: 40
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
-        with:
-          server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          local_path: ./plugins/
-          remote_path: .
-          sftp_only: true
-          sftpArgs: -o ConnectTimeout=30
-
-      - name: Deploy result
-        run: |
-          echo "lftp_mirror: ${{ steps.lftp_mirror.outcome }}"
-          echo "wlixcc_root: ${{ steps.wlixcc_root.outcome }}"
-          if [ "${{ steps.lftp_mirror.outcome }}" != "success" ] && [ "${{ steps.wlixcc_root.outcome }}" != "success" ]; then
-            echo "GitHub deploy failed. Use local: .\\deploy.ps1 after filling .deploy.env"
-            exit 1
-          fi
-          echo "Deploy succeeded."
+          lftp sftp://${SHOCKBYTE_SFTP_HOST}:${SHOCKBYTE_SFTP_PORT} <<'LFTP_EOF'
+          set sftp:auto-confirm yes
+          set cmd:fail-exit yes
+          mkdir -f plugins
+          lcd plugins
+          cd plugins
+          mirror -R --verbose --parallel=4 .
+          bye
+          LFTP_EOF
+          echo "Deploy succeeded (lftp mirror to remote plugins/)."
