@@ -33,39 +33,10 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: Deploy (wlixcc - plugins folder)
-        id: wlixcc_plugins
-        continue-on-error: true
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
-        with:
-          server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          local_path: ./plugins/*
-          remote_path: plugins
-          sftp_only: true
-          sftpArgs: -o ConnectTimeout=30
-
-      - name: Deploy (wlixcc - server root)
-        id: wlixcc_root
-        if: steps.wlixcc_plugins.outcome == 'failure'
-        continue-on-error: true
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
-        with:
-          server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          local_path: ./plugins/
-          remote_path: .
-          sftp_only: true
-          sftpArgs: -o ConnectTimeout=30
-
-      - name: Deploy (lftp mirror via netrc)
+      - name: Deploy (lftp mirror)
         id: lftp_mirror
-        if: steps.wlixcc_root.outcome == 'failure'
         continue-on-error: true
+        timeout-minutes: 40
         env:
           SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
           SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
@@ -81,15 +52,30 @@ jobs:
           port ${SHOCKBYTE_SFTP_PORT}
           EOF
           chmod 600 ~/.netrc
-          lftp sftp://${SHOCKBYTE_SFTP_HOST}:${SHOCKBYTE_SFTP_PORT} -e "set sftp:auto-confirm yes; mkdir -f plugins; mirror -R --verbose plugins plugins; quit"
+          lftp sftp://${SHOCKBYTE_SFTP_HOST}:${SHOCKBYTE_SFTP_PORT} -e "set sftp:auto-confirm yes; mkdir -f plugins; mirror -R --parallel=4 --verbose ./plugins ./plugins; quit"
+
+      - name: Deploy (wlixcc server root)
+        id: wlixcc_root
+        if: steps.lftp_mirror.outcome == 'failure'
+        continue-on-error: true
+        timeout-minutes: 40
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
+          port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
+          username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
+          password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
+          local_path: ./plugins/
+          remote_path: .
+          sftp_only: true
+          sftpArgs: -o ConnectTimeout=30
 
       - name: Deploy result
         run: |
-          echo "wlixcc_plugins: ${{ steps.wlixcc_plugins.outcome }}"
-          echo "wlixcc_root: ${{ steps.wlixcc_root.outcome }}"
           echo "lftp_mirror: ${{ steps.lftp_mirror.outcome }}"
-          if [ "${{ steps.wlixcc_plugins.outcome }}" != "success" ] && [ "${{ steps.wlixcc_root.outcome }}" != "success" ] && [ "${{ steps.lftp_mirror.outcome }}" != "success" ]; then
-            echo "All GitHub deploy methods failed. Use local: .\\deploy.ps1 after filling .deploy.env"
+          echo "wlixcc_root: ${{ steps.wlixcc_root.outcome }}"
+          if [ "${{ steps.lftp_mirror.outcome }}" != "success" ] && [ "${{ steps.wlixcc_root.outcome }}" != "success" ]; then
+            echo "GitHub deploy failed. Use local: .\\deploy.ps1 after filling .deploy.env"
             exit 1
           fi
           echo "Deploy succeeded."
