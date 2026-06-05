@@ -43,5 +43,5 @@ jobs:
         run: |
           set -e
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" -e "set sftp:auto-confirm yes; set cmd:fail-exit yes; mkdir -f plugins; mirror -R --verbose --parallel=4 plugins plugins; bye"
+          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" -e "set sftp:auto-confirm yes; set cmd:fail-exit yes; lcd plugins; mirror -R --verbose --parallel=4 . plugins; bye"
           echo "Deploy succeeded (lftp mirror to remote plugins/)."
