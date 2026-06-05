@@ -1,49 +1,16 @@
-name: Deploy plugins to Shockbyte
-
-concurrency:
-  group: shockbyte-deploy-${{ github.ref }}
-  cancel-in-progress: true
+# GitHub -> Shockbyte SFTP does not work (Shockbyte "agent" paths). Deploy from your PC instead.
+name: Deploy plugins to Shockbyte (local only)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'plugins/**'
-      - '.github/workflows/deploy-shockbyte.yml'
-      - 'scripts/sftp_deploy_plugins.py'
   workflow_dispatch:
 
 jobs:
-  deploy:
+  local-deploy-only:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Check SFTP port reachable
-        env:
-          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
+      - name: Use WinSCP on your PC
         run: |
-          set -e
-          if [ -z "$SHOCKBYTE_SFTP_HOST" ] || [ -z "$SHOCKBYTE_SFTP_PORT" ]; then
-            echo "Missing SHOCKBYTE_SFTP_HOST or SHOCKBYTE_SFTP_PORT secrets."
-            exit 1
-          fi
-          timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
-          echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
-
-      - name: Deploy plugins to Rubygame/plugins
-        timeout-minutes: 55
-        env:
-          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          SHOCKBYTE_SFTP_USER: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-        run: |
-          set -e
-          export SHOCKBYTE_SFTP_HOST="${SHOCKBYTE_SFTP_HOST#sftp://}"
-          export SHOCKBYTE_SFTP_HOST="${SHOCKBYTE_SFTP_HOST%%/*}"
-          python3 -m pip install --quiet paramiko
-          python3 scripts/sftp_deploy_plugins.py
+          echo "Shockbyte blocks cloud SFTP uploads to Rubygame/ (agent path error)."
+          echo "On your PC after git push, run:  .\\deploy.ps1"
+          echo "Requires: WinSCP + .deploy.env with SFTP credentials."
+          exit 0
