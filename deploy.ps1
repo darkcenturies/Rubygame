@@ -45,7 +45,7 @@ if ($winScp) {
         'option confirm off',
         "open sftp://${SFTP_USER}@${SFTP_HOST}:${SFTP_PORT}/ -hostkey=`"ssh-rsa 2048 RsvkKfFn1JlKW34Lqs8lqeyCIQC8JveU8JvuOH6ctc8=`" -password=$($SFTP_PASSWORD -replace '"','""')",
         'cd /Rubygame',
-        "synchronize remote `"$pluginsLocal`" /plugins -delete=none",
+        "synchronize remote `"$pluginsLocal`" plugins -delete=none",
         'exit'
     )
     $lines | Set-Content -Path $scriptFile -Encoding ASCII
