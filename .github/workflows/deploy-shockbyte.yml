@@ -1,5 +1,9 @@
 name: Deploy plugins to Shockbyte
 
+concurrency:
+  group: shockbyte-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
@@ -85,7 +89,7 @@ jobs:
           echo "wlixcc_root: ${{ steps.wlixcc_root.outcome }}"
           echo "lftp_mirror: ${{ steps.lftp_mirror.outcome }}"
           if [ "${{ steps.wlixcc_plugins.outcome }}" != "success" ] && [ "${{ steps.wlixcc_root.outcome }}" != "success" ] && [ "${{ steps.lftp_mirror.outcome }}" != "success" ]; then
-            echo "All GitHub deploy methods failed. Use local: .\\deploy.ps1 after creating .deploy.env"
+            echo "All GitHub deploy methods failed. Use local: .\\deploy.ps1 after filling .deploy.env"
             exit 1
           fi
           echo "Deploy succeeded."
