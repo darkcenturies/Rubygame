@@ -4,7 +4,14 @@ Set-Location $repoRoot
 
 if (-not (Test-Path ".deploy.env")) {
     Copy-Item ".deploy.env.example" ".deploy.env"
-    Write-Host "Created .deploy.env — edit it with your Shockbyte SFTP user/password, then run this script again."
+    Write-Host "Created .deploy.env - edit with real SFTP user from Shockbyte Files -> SFTP Connect (not the example text)."
+    notepad ".deploy.env"
+    exit 1
+}
+
+$envText = Get-Content ".deploy.env" -Raw
+if ($envText -match 'your_username_from_shockbyte|your_shockbyte_panel_password') {
+    Write-Host ".deploy.env still has placeholders - fill SFTP_USER and SFTP_PASSWORD, then run this script again."
     notepad ".deploy.env"
     exit 1
 }
