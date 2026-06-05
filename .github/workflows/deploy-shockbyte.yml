@@ -34,7 +34,6 @@ jobs:
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
       - name: Deploy plugins (lftp mirror)
-        id: lftp_mirror
         timeout-minutes: 42
         env:
           SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
@@ -44,12 +43,5 @@ jobs:
         run: |
           set -e
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          cat > ~/.netrc <<EOF
-          machine ${SHOCKBYTE_SFTP_HOST}
-          login ${SHOCKBYTE_SFTP_USER}
-          password ${SHOCKBYTE_SFTP_PASSWORD}
-          port ${SHOCKBYTE_SFTP_PORT}
-          EOF
-          chmod 600 ~/.netrc
-          lftp sftp://${SHOCKBYTE_SFTP_HOST}:${SHOCKBYTE_SFTP_PORT} -e "set sftp:auto-confirm yes; set cmd:fail-exit yes; mkdir -f plugins; lcd plugins; cd plugins; mirror -R --verbose --parallel=4 .; bye"
+          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" -e "set sftp:auto-confirm yes; set cmd:fail-exit yes; mkdir -f plugins; mirror -R --verbose --parallel=4 plugins plugins; bye"
           echo "Deploy succeeded (lftp mirror to remote plugins/)."
