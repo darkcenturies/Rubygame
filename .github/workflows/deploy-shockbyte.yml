@@ -10,6 +10,7 @@ on:
     paths:
       - 'plugins/**'
       - '.github/workflows/deploy-shockbyte.yml'
+      - 'scripts/sftp_deploy_plugins.py'
   workflow_dispatch:
 
 jobs:
@@ -33,27 +34,6 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: List remote Rubygame (debug)
-        env:
-          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          SHOCKBYTE_SFTP_USER: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-        run: |
-          set -e
-          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          lftp -f - <<EOF
-          set sftp:auto-confirm yes
-          set cmd:fail-exit yes
-          open -p ${SHOCKBYTE_SFTP_PORT} sftp://${SHOCKBYTE_SFTP_HOST}
-          user ${SHOCKBYTE_SFTP_USER} ${SHOCKBYTE_SFTP_PASSWORD}
-          pwd
-          ls -la
-          ls -la Rubygame
-          ls -la Rubygame/plugins
-          bye
-          EOF
-
       - name: Deploy plugins to Rubygame/plugins
         timeout-minutes: 55
         env:
@@ -63,14 +43,5 @@ jobs:
           SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
         run: |
           set -e
-          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          lftp -f - <<EOF
-          set sftp:auto-confirm yes
-          set cmd:fail-exit yes
-          open -p ${SHOCKBYTE_SFTP_PORT} sftp://${SHOCKBYTE_SFTP_HOST}
-          user ${SHOCKBYTE_SFTP_USER} ${SHOCKBYTE_SFTP_PASSWORD}
-          lcd plugins
-          mirror -R --verbose --parallel=4 --exclude-glob .git* . Rubygame/plugins
-          bye
-          EOF
-          echo "Deploy succeeded (Rubygame/plugins)."
+          python3 -m pip install --quiet paramiko
+          python3 scripts/sftp_deploy_plugins.py
