@@ -33,17 +33,7 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: SFTP remote listing (diagnose)
-        env:
-          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          SHOCKBYTE_SFTP_USER: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" -e "pwd; cls -la; bye" || true
-
-      - name: Deploy plugins (mirror to remote cwd)
+      - name: Deploy plugins (OpenSSH sftp)
         timeout-minutes: 55
         env:
           SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
@@ -52,6 +42,13 @@ jobs:
           SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
         run: |
           set -e
-          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" -e "set sftp:auto-confirm yes; set cmd:fail-exit yes; lcd plugins; mirror -R --verbose --parallel=4 . .; bye"
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass openssh-client
+          BATCH=$(mktemp)
+          printf '%s\n' 'lcd plugins' 'cd plugins' 'put -r *' 'bye' > "$BATCH"
+          cat "$BATCH"
+          sshpass -p "${SHOCKBYTE_SFTP_PASSWORD}" sftp -P "${SHOCKBYTE_SFTP_PORT}" \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -b "$BATCH" \
+            "${SHOCKBYTE_SFTP_USER}@${SHOCKBYTE_SFTP_HOST}"
           echo "Deploy succeeded."
