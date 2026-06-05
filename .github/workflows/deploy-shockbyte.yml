@@ -33,7 +33,7 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: Deploy plugins (scp)
+      - name: Deploy plugins (scp whole folder)
         timeout-minutes: 55
         env:
           SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
@@ -46,6 +46,6 @@ jobs:
           sshpass -p "${SHOCKBYTE_SFTP_PASSWORD}" scp -r -P "${SHOCKBYTE_SFTP_PORT}" \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            plugins/* \
-            "${SHOCKBYTE_SFTP_USER}@${SHOCKBYTE_SFTP_HOST}:plugins/"
+            plugins \
+            "${SHOCKBYTE_SFTP_USER}@${SHOCKBYTE_SFTP_HOST}:."
           echo "Deploy succeeded."
