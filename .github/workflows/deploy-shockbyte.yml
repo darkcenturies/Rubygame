@@ -33,15 +33,15 @@ jobs:
           timeout 15 bash -c "until echo > /dev/tcp/${SHOCKBYTE_SFTP_HOST}/${SHOCKBYTE_SFTP_PORT}; do sleep 1; done"
           echo "Port ${SHOCKBYTE_SFTP_PORT} is reachable from GitHub."
 
-      - name: Deploy plugins folder
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
-        with:
-          server: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
-          port: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
-          username: ${{ secrets.SHOCKBYTE_SFTP_USER }}
-          password: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
-          protocol: sftp
-          local-dir: ./plugins/
-          server-dir: ./plugins/
-          log-level: verbose
-          dangerous-clean-slate: false
+      - name: Deploy plugins (lftp into plugins dir)
+        timeout-minutes: 55
+        env:
+          SHOCKBYTE_SFTP_HOST: ${{ secrets.SHOCKBYTE_SFTP_HOST }}
+          SHOCKBYTE_SFTP_PORT: ${{ secrets.SHOCKBYTE_SFTP_PORT }}
+          SHOCKBYTE_SFTP_USER: ${{ secrets.SHOCKBYTE_SFTP_USER }}
+          SHOCKBYTE_SFTP_PASSWORD: ${{ secrets.SHOCKBYTE_SFTP_PASSWORD }}
+        run: |
+          set -e
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          lftp -u "${SHOCKBYTE_SFTP_USER},${SHOCKBYTE_SFTP_PASSWORD}" -p "${SHOCKBYTE_SFTP_PORT}" "sftp://${SHOCKBYTE_SFTP_HOST}" -e "set sftp:auto-confirm yes; set cmd:fail-exit yes; mkdir -f plugins; cd plugins; lcd plugins; mirror -R --verbose --parallel=4 .; bye"
+          echo "Deploy succeeded."
