@@ -1,0 +1,86 @@
+# Configuration for Xshards plugin
+
+# Storage configuration
+storage:
+  type: sqlite # Storage type: 'mysql' or 'sqlite'
+  # MySQL Configuration
+  # Uncomment the following lines to use MySQL instead of SQLite
+  # Make sure to configure your MySQL settings below
+  mysql:
+    host: localhost
+    port: 3306
+    database: xshards
+    user: root
+    password: password
+  # SQLite Configuration
+  # SQLite is used by default, so you can leave this as is
+  sqlite:
+    file: plugins/Xshards/storage/xshards.db
+
+# Store settings
+store:
+  size: 9 # GUI size (9, 18, 27, 36, 45, 54)
+  # Customize the shop GUI title
+  title: "&cRuby Store"
+  # Add custom lore to all shop items (supports multiple lines and color codes)
+  # Leave empty list [] to use default lore
+  default-lore:
+    - "&7Price: {price} rubies"
+  # Per-item customization: slot number -> custom settings
+  # Format: slot: { display-name: "Custom Name", lore: ["line1", "line2"] }
+  # Example: 0: { display-name: "&6Golden Apple", lore: ["&7Heals 4 hearts", "&7Price: {price} shards"] }
+  items: {}
+
+# Shard earning methods (enable/disable)
+earning:
+  playtime:
+    enabled: true
+    interval: 3600000 # Time interval in milliseconds (1 hour = 3600000 ms)
+    amount: 3 # Number of shards earned per interval
+    message-enabled: true # Send message when shards are earned
+  
+  kills:
+    enabled: false
+    amount: 10 # Number of shards earned per player kill
+    message-enabled: true # Send message when shards are earned
+    
+  afk:
+    enabled: false
+    interval: 30 # Seconds between earnings
+    amount: 1 # Number of shards earned per interval
+    countdown: 5 # Seconds to wait before teleporting to AFK location
+    message-enabled: true # Send message when shards are earned
+    # We highly recommend setting up a dedicated world for AFK using MultiVerse-Core
+    # This improves server performance and reduces potential bugs
+
+# Daily Rewards System
+daily-rewards:
+  enabled: true # Enable/disable daily rewards
+  amount: 10 # Number of shards given per day
+  
+  # Streak/Multiplier System
+  streak:
+    enabled: true # Enable/disable streak multiplier
+    increment: 0.1 # Multiplier increase per stage completion (e.g., 0.1x each time)
+    # Choose ONE active stage: easy, mid, or hard
+    # Only one stage can be active at a time
+    active_stage: easy # Options: easy, mid, hard
+    
+    # Stage difficulties (only active_stage is used)
+    easy:
+      interval: 1 # Multiplier increases every 1 day of consecutive logins
+    mid:
+      interval: 3 # Multiplier increases every 3 days of consecutive logins
+    hard:
+      interval: 7 # Multiplier increases every 7 days of consecutive logins
+
+# Shard Transfer System
+transfer:
+  enabled: disable # Enable/disable shard transfers between players
+
+# Leaderboard System
+leaderboard:
+  enabled: disable # Enable/disable leaderboard
+
+# PlaceholderAPI Integration
+placeholderapi: true

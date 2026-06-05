@@ -1,0 +1,38 @@
+version: 2 # DO NOT CHANGE
+holograms:
+  welcome:
+    type: TEXT
+    location:
+      world: world
+      x: 6.0
+      y: 133.875
+      z: 0.5449234247207642
+      yaw: -180.0
+      pitch: 0.0
+    visibility_distance: 10
+    visibility: ALL
+    persistent: true
+    scale_x: 1.0
+    scale_y: 1.0
+    scale_z: 1.0
+    translation_x: 0.0
+    translation_y: 0.0
+    translation_z: 0.0
+    shadow_radius: 0.0
+    shadow_strength: 1.0
+    text:
+    - <red><bold>RUBYGAME - Quick Guide</bold></red>
+    - <gray>Basic Commands</gray>
+    - <yellow>/home</yellow> - Teleport back to your home
+    - <yellow>/spawn</yellow> - Return to the main spawn area
+    - <yellow>/back</yellow> - Go back to your last location
+    - <yellow>/tpa <player></yellow> - Request to teleport to someone
+    - <yellow>/balance</yellow> - Check your balance
+    - <yellow>/shop</yellow> - Access the server shop
+    - <yellow>/rtp</yellow> - Teleport to a random location
+    text_shadow: false
+    see_through: true
+    text_alignment: center
+    update_text_interval: -1
+    billboard: vertical
+    background: '#c8000000'

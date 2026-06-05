@@ -1,0 +1,175 @@
+#  __          ___ _     _ _____ _______ _____
+#  \ \        / (_) |   | |  __ \__   __|  __ \
+#   \ \  /\  / / _| | __| | |__) | | |  | |__) |
+#    \ \/  \/ / | | |/ _` |  _  /  | |  |  ___/
+#     \  /\  /  | | | (_| | | \ \  | |  | |
+#      \/  \/   |_|_|\__,_|_|  \_\ |_|  |_|
+#
+# by Joni - Thank you for using this plugin
+
+# Language setting
+# Available: [en, de, ru]
+# You can add/edit languages in the plugin folder (/lang)
+lang: en
+
+# Global RTP settings
+# This section defines the main settings for random teleportation
+# Custom settings per world can be defined in the custom section
+global:
+  # Min & max teleportation range
+  min: 0
+  max: 5000
+  
+  # Shape of the teleportation area [CIRCLE/SQUARE]
+  shape: SQUARE
+  
+  # Teleportation center
+  center:
+    player: false # If true, teleportation is centered on the player; x and z will be ignored
+    x: 0 # X coordinate of center
+    z: 0 # Z coordinate of center
+  
+  # Cooldown settings
+  cooldown:
+    enabled: true # Enable cooldown between RTP uses
+    time: 5 # Cooldown time in seconds
+  
+  # Move timer settings
+  movetimer:
+    enabled: true # If true, no movement allowed before teleportation
+    time: 5 # Time in seconds
+    sound-canceled: ENTITY_VILLAGER_NO # Set to 'false' to disable.
+  
+  # Message settings
+  messages:
+    start: false # Show message when RTP starts
+    end: false # Show message when RTP ends
+  
+  # Title messages displayed when RTP starts/ends
+  titles:
+    start:
+      enabled: false
+      fadeIn: 0.5
+      stay: 2
+      fadeOut: 0.5
+    end:
+      enabled: false
+      fadeIn: 0.5
+      stay: 2
+      fadeOut: 0.5
+  
+  # Sound settings
+  sound:
+    start: false # Play a sound when teleport starts. Set to 'false' to disable.
+    end: ENTITY_PLAYER_LEVELUP # Use any valid Bukkit Sound enum, e.g., ENTITY_PLAYER_LEVELUP.
+  
+  # Blocks to avoid when teleporting
+  blocks:
+  - LAVA
+  - WATER
+  - AIR
+  
+  # Y-limits for teleporting
+  # null = no limit
+  y-min: null
+  y-max: null
+  
+  # Biomes to avoid when teleporting
+  # Example: biomes: [OCEAN, DESERT, PLAINS, FOREST, TAIGA, MUSHROOM_FIELDS, JUNGLE]
+  # Set to '[]' to disable.
+  biomes: []
+  
+  # Teleport to another world
+  # If set to a valid world name, players will be teleported to that world instead of their current one.
+  # Set to 'false' to teleport within the same world.
+  tp-in-other-world: false
+  
+  # If true, the player's individual spawn point will be set to the new location upon teleporting.
+  # Set to 'false' to disable.
+  set-spawnpoint: false
+  
+  # RTP generation strategy used to determine how safe locations are found.
+  # This controls the algorithm used to pick valid teleport positions.
+  #
+  # Available strategies:
+  # AUTO          - Automatically chooses the best strategy based on the world environment.
+  # HIGHEST_BLOCK - Uses the highest non-air block. Extremely fast. Perfect for normal Overworld and The End.
+  # BOTTOM_UP     - Scans from minY upwards for a solid block with space above it. Essential for the Nether or Cave worlds.
+  # TOP_DOWN      - Scans from maxY downward.
+  #
+  # Recommended: AUTO (handles most worlds correctly without configuration)
+  strategy: AUTO
+
+# Auto-RTP settings
+# Should the plugin teleport players automatically?
+auto-rtp:
+  onfirstjoin: false # When a player first joins the server
+  onjoin: false # Every time a player joins the server
+  ondeath: false # After a player dies
+
+# List mode: use 'blacklist' or 'whitelist'
+list: blacklist
+
+# Set to '[]' to disable the blacklist.
+blacklist:
+  # Add blocked worlds here
+  []
+
+# Set to '[]' to disable the whitelist.
+whitelist:
+  # Add allowed worlds here
+  []
+
+# Uncomment and modify to customize settings for specific worlds
+# YOU CAN remove any fields you don’t want to customize,
+# BUT missing values will be set to the global values
+# (e.g. max in global is 2500 and if not set here it will be 2500 as well)
+# To enable, remove { } and add your worlds below:
+# A short example is shown below:
+custom: {}
+#  my_custom_world:
+#    min: 500
+#    max: 1500
+#    cooldown:
+#      time: 30
+#    biomes: [OCEAN, DESERT]
+
+# Maximum attempts to find a safe location before failing
+max-tries: 25
+
+# If you want to change the prefix, you can do it here
+prefix: '[&2WildRTP&f] &6'
+
+# Hook settings for third-party plugins
+hooks:
+  worldguard:
+    enabled: true # When enabled, checks if a location is inside any protected region and skips it if so
+  protectionstones:
+    enabled: false # When enabled, checks if a location is inside any protected region and skips it if so
+  towny:
+    enabled: false # When enabled, checks if a location is claimed and skips it if so
+  residence:
+    enabled: false # When enabled, checks if a location is claimed and skips it if so
+  griefdefender:
+    enabled: false # When enabled, checks if a location is in the wilderness
+
+# Check for updates
+check-updates: true
+
+# Notify admins about plugin updates when they join
+notify-updates-on-join: true
+
+# If I am allowed to collect anonymous data about your server and this plugin. So I can see how many servers are using this plugin :)
+# And you can see the data as well here https://bstats.org/plugin/bukkit/WildRTP/17799
+metrics: true
+
+# Advanced settings
+force-close-inventories: true
+per-world-cooldowns: false
+prevent-spam: true # Block multiple searches while one is in progress
+
+# Debug mode
+debug: false
+
+# Config version (do not change)
+config-version: 13

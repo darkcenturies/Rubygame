@@ -1,0 +1,37 @@
+# OnePlayerSleep Configuration
+# Customize your plugin settings here
+
+# Plugin Display Name
+# Change this to match your server name (e.g., GlaceSleep, DreamSleep, etc.)
+plugin-name: "OnePlayerSleep"
+
+# Enable/Disable plugin on startup
+enabled-on-startup: true
+
+# Weather Clearing
+# Set to true to clear rain/thunder when skipping night
+# Set to false to only skip time without affecting weather
+weather-clear: false
+
+# Message Settings
+message-settings:
+  # Show message when night is skipped
+  show-night-skip: true
+  # Show messages for enable/disable commands
+  show-toggle-messages: true
+  # Send messages to console
+  console-logging: true
+
+# Messages (Use & for color codes)
+messages:
+  night-skipped: "&6Night skipped by %player%"
+  plugin-enabled: "&a%plugin% enabled!"
+  plugin-disabled: "&c%plugin% disabled!"
+  plugin-reloaded: "&a%plugin% configuration reloaded!"
+  no-permission: "&cYou don't have permission to use this command."
+  status-enabled: "&6%plugin% is currently &aenabled&6."
+  status-disabled: "&6%plugin% is currently &cdisabled&6."
+  usage: "&6Usage: /oneplayersleep <enable|disable|reload>"
+
+# Do not modify this
+config-version: 1

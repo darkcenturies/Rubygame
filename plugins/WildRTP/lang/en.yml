@@ -1,0 +1,26 @@
+chat:
+  start: You will be teleported soon!
+  end: Location found after %tries% trie(s)
+  cooldown: '&cYou are on cooldown! Please wait %time%s!'
+  movetimer:
+    cancelled: '&cYou moved! Cancelled RTP!'
+    remaining: '&cYou will be teleported in %time%s! Moving will cancel this!'
+    already: '&cYou are waiting for the teleport already!'
+  unallowed-world: '&cYou can''t run this command in this world!'
+  searching-already: '&cYou are already searching for a location!'
+
+titles:
+  start:
+    title: '&2You will be teleported!'
+    sub: ''
+  end:
+    title: '&2Location found'
+    sub: '&6After %tries% trie(s)'
+
+no-permissions: '&cYou don''t have permission to use this command!'
+only-player: '&cYou have to be a player to use this command!'
+error: '&cAn error occurred!'
+unknown-command: '&cUnknown command!'
+
+# Config version (do not change)
+config-version: 5

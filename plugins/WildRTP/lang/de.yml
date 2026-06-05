@@ -1,0 +1,26 @@
+chat:
+  start: Du wirst gleich teleportiert!
+  end: Position nach %tries% Versuch(en) gefunden
+  cooldown: '&cDu hast noch Abklingzeit! Bitte warte %time%s!'
+  movetimer:
+    cancelled: '&cDu hast dich bewegt! Teleport abgebrochen!'
+    remaining: '&cDu wirst in %time%s teleportiert! Bewegung bricht den Vorgang ab!'
+    already: '&cDu wartest bereits auf den Teleport!'
+  unallowed-world: '&cDu kannst diesen Befehl in dieser Welt nicht nutzen!'
+  searching-already: '&cDu suchst bereits nach einem Ort!'
+
+titles:
+  start:
+    title: '&2Du wirst teleportiert!'
+    sub: ''
+  end:
+    title: '&2Position gefunden'
+    sub: '&6Nach %tries% Versuch(en)'
+
+no-permissions: '&cDu hast keine Berechtigung, diesen Befehl zu nutzen!'
+only-player: '&cDu musst ein Spieler sein, um diesen Befehl zu nutzen!'
+error: '&cEin Fehler ist aufgetreten!'
+unknown-command: '&cUnbekannter Befehl!'
+
+# Config version (do not change)
+config-version: 5
